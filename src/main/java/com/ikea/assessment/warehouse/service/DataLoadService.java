@@ -31,13 +31,12 @@ public class DataLoadService implements IDataLoadService {
     private final ArticleRepository articleRepository;
     private final ProductRepository productRepository;
     private final ProductArticleRepository productArticleRepository;
-    private final JSONParser jsonParser;
+    private final JSONParser jsonParser = new JSONParser();
 
-    public DataLoadService(ArticleRepository articleRepository, ProductRepository productRepository, ProductArticleRepository productArticleRepository, JSONParser jsonParser) {
+    public DataLoadService(ArticleRepository articleRepository, ProductRepository productRepository, ProductArticleRepository productArticleRepository) {
         this.articleRepository = articleRepository;
         this.productRepository = productRepository;
         this.productArticleRepository = productArticleRepository;
-        this.jsonParser = new JSONParser();
     }
 
 
