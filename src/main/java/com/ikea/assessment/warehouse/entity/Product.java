@@ -2,6 +2,7 @@ package com.ikea.assessment.warehouse.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 
 @Data
