@@ -28,7 +28,8 @@ public class ProductController {
 
     @ApiOperation(value = "Sell Product")
     @PutMapping("/{id}/sell")
-    public ResponseEntity sell(@PathVariable long id){
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    public ResponseEntity<Void> sell(@PathVariable long id){
+        productService.sell(id);
+        return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     }
 }
