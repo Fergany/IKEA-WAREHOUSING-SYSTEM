@@ -2,6 +2,7 @@ package com.ikea.assessment.warehouse.service;
 
 import com.ikea.assessment.warehouse.dto.ArticleDTO;
 import com.ikea.assessment.warehouse.dto.ProductDTO;
+import com.ikea.assessment.warehouse.entity.Article;
 import com.ikea.assessment.warehouse.entity.Product;
 import com.ikea.assessment.warehouse.entity.ProductArticle;
 import com.ikea.assessment.warehouse.entity.ProductStatus;
@@ -11,6 +12,7 @@ import com.ikea.assessment.warehouse.repository.ArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,7 +46,35 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    @Transactional(rollbackFor = RuntimeException.class)
     public void sell(long id) {
+        ProductStatus status = ProductStatus.NEW;
+        Product product = productRepository.findByIdAndStatus(id, status)
+                .orElseThrow(() -> new ObjectNotFoundException("Product", "(Id & Status)", "(" + String.valueOf(id) + " & " + status.toString() + ")"));
 
+        List<ProductArticle> productArticleList = productArticleRepository.findByProductAndStatus(product, ProductStatus.NEW)
+                .orElseThrow(() -> new ObjectNotFoundException("ProductArticle", "(Product & Status)", "(" + String.valueOf(id) + " & " + ProductStatus.NEW.toString() + ")"));
+
+        productArticleList.stream().forEach(productArticle -> {
+            updateArticle(productArticle);
+            updateProductArticle(productArticle);
+        });
+        updateProduct(product);
+    }
+
+    private void updateArticle(ProductArticle productArticle) throws IllegalArgumentException {
+        Article article = productArticle.getArticle();
+        article.setStock(article.getStock() - productArticle.getAmountOf());
+        articleRepository.save(article);
+    }
+
+    private void updateProductArticle(ProductArticle productArticle) throws IllegalArgumentException {
+        productArticle.setStatus(ProductStatus.SOLD);
+        productArticleRepository.save(productArticle);
+    }
+
+    private void updateProduct(Product product) throws IllegalArgumentException {
+        product.setStatus(ProductStatus.SOLD);
+        this.productRepository.save(product);
     }
 }
