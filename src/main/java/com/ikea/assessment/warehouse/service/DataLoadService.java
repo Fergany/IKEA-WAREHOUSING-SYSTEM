@@ -1,8 +1,13 @@
 package com.ikea.assessment.warehouse.service;
 
 import com.ikea.assessment.warehouse.entity.Article;
+import com.ikea.assessment.warehouse.entity.Product;
+import com.ikea.assessment.warehouse.entity.ProductArticle;
+import com.ikea.assessment.warehouse.entity.ProductStatus;
 import com.ikea.assessment.warehouse.exception.DataLoadException;
+import com.ikea.assessment.warehouse.exception.ObjectNotFoundException;
 import com.ikea.assessment.warehouse.mapper.ArticleMapper;
+import com.ikea.assessment.warehouse.mapper.ProductMapper;
 import com.ikea.assessment.warehouse.repository.ArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductRepository;
@@ -65,7 +70,52 @@ public class DataLoadService implements IDataLoadService {
         }
     }
 
-    private void loadProductData(String productFilePath) {
+    private void loadProductsData(String productsFilePath) throws DataLoadException{
+        try {
+            logger.info("Start loading Products data from: " + productsFilePath);
+            JSONArray productList = JSONFileReader.getJSONArray(jsonParser, productsFilePath, "products");
+            productList.forEach(product -> {
+                Product savedProduct = saveProduct((JSONObject) product);
+                saveProductArticle(savedProduct, (JSONObject) product);
+            });
+        } catch (IOException | ParseException | ObjectNotFoundException exception) {
+            logger.error(exception.getMessage());
+            throw new DataLoadException(exception.getMessage());
+        }
+    }
 
+
+    private Product saveProduct(JSONObject productJSONObject) {
+        logger.info("Saving Products' data to DB.");
+        try {
+            Product product = ProductMapper.convertToEntity(productJSONObject);
+            product.setStatus(ProductStatus.NEW);
+            return productRepository.save(product);
+        } catch (IllegalArgumentException exception){
+            logger.error(exception.getMessage());
+            throw new DataLoadException(exception.getMessage());
+        }
+    }
+
+
+    private void saveProductArticle(Product product, JSONObject productJSONObject) {
+        logger.info("Saving ProductArticles' data to DB.");
+        try {
+            JSONArray articles = (JSONArray) productJSONObject.get("contain_articles");
+
+            articles.forEach(contain_article -> {
+                JSONObject articleJSONObject = (JSONObject) contain_article;
+                long articleId = Long.parseLong((String) articleJSONObject.get("art_id"));
+                long amountOf = Long.parseLong((String) articleJSONObject.get("amount_of"));
+
+                Article article = articleRepository.findById(articleId)
+                        .orElseThrow(() -> new ObjectNotFoundException("Article", "Id", String.valueOf(articleId)));
+
+                productArticleRepository.save(new ProductArticle(product, article, amountOf, ProductStatus.NEW));
+            });
+        } catch (ClassCastException | ObjectNotFoundException exception) {
+            logger.error(exception.getMessage());
+            throw new DataLoadException(exception.getMessage());
+        }
     }
 }
