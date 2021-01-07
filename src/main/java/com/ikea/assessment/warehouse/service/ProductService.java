@@ -41,7 +41,7 @@ public class ProductService implements IProductService {
             List<ArticleDTO> articleDTOList = productArticlesList.stream().map(productArticle -> {
                 return ArticleMapper.convertToDTO(productArticle.getArticle());
             }).collect(Collectors.toList());
-            return new ProductDTO(product.getName(), articleDTOList);
+            return new ProductDTO(product.getId(), product.getName(), articleDTOList);
         }).collect(Collectors.toList());
     }
 
