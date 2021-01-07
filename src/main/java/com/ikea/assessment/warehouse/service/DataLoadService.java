@@ -40,12 +40,14 @@ public class DataLoadService implements IDataLoadService {
         this.jsonParser = new JSONParser();
     }
 
+
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public void loadData(String inventoryFilePath, String productsFilePath) {
         loadInventoryData(inventoryFilePath);
         loadProductData(productsFilePath);
     }
+
 
     private void loadInventoryData(String inventoryFilePath) throws DataLoadException {
         try {
@@ -70,7 +72,8 @@ public class DataLoadService implements IDataLoadService {
         }
     }
 
-    private void loadProductsData(String productsFilePath) throws DataLoadException{
+
+    private void loadProductsData(String productsFilePath) throws DataLoadException {
         try {
             logger.info("Start loading Products data from: " + productsFilePath);
             JSONArray productList = JSONFileReader.getJSONArray(jsonParser, productsFilePath, "products");
@@ -91,7 +94,7 @@ public class DataLoadService implements IDataLoadService {
             Product product = ProductMapper.convertToEntity(productJSONObject);
             product.setStatus(ProductStatus.NEW);
             return productRepository.save(product);
-        } catch (IllegalArgumentException exception){
+        } catch (IllegalArgumentException exception) {
             logger.error(exception.getMessage());
             throw new DataLoadException(exception.getMessage());
         }
