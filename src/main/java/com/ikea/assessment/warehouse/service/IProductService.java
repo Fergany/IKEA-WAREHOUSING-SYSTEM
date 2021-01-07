@@ -5,6 +5,6 @@ import com.ikea.assessment.warehouse.dto.ProductDTO;
 import java.util.List;
 
 public interface IProductService {
-    public List<ProductDTO> getAll();
+    public List<ProductDTO> getNewProducts();
     public void sell(long id);
 }

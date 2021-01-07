@@ -18,8 +18,8 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductDTO>> getAll(){
-        return new ResponseEntity<List<ProductDTO>>(productService.getAll(), HttpStatus.OK);
+    public ResponseEntity<List<ProductDTO>> getAllNew(){
+        return new ResponseEntity<List<ProductDTO>>(productService.getNewProducts(), HttpStatus.OK);
     }
 
     @PutMapping("/{id}/sell")
