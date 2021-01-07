@@ -8,6 +8,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class ProductDTO {
+    Long id;
     String name;
     List<ArticleDTO> contain_articles;
 }
