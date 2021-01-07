@@ -25,6 +25,7 @@ public class ProductArticle {
     @Column(name = "amount_of")
     private long amountOf;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "product_status")
     private ProductStatus status;
 

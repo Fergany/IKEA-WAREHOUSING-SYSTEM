@@ -18,6 +18,7 @@ public class Product {
     @Column(name = "product_name")
     private String name;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "product_status")
     private ProductStatus status;
 
