@@ -1,4 +1,4 @@
-package com.ikea.assessment.warehouse.config;
+package com.ikea.assessment.warehouse.configuration;
 
 import com.ikea.assessment.warehouse.service.IDataLoadService;
 import org.springframework.beans.factory.annotation.Value;
