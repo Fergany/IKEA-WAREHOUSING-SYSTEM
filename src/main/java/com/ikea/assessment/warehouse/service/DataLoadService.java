@@ -45,7 +45,7 @@ public class DataLoadService implements IDataLoadService {
     @Transactional(rollbackFor = RuntimeException.class)
     public void loadData(String inventoryFilePath, String productsFilePath) {
         loadInventoryData(inventoryFilePath);
-        loadProductData(productsFilePath);
+        loadProductsData(productsFilePath);
     }
 
 
