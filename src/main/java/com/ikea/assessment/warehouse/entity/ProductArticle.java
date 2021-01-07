@@ -15,11 +15,11 @@ public class ProductArticle {
     private Long id;
 
     @ManyToOne
-    @Column(name = "product_id")
+    @JoinColumn(name = "product_id")
     private Product product;
 
     @ManyToOne
-    @Column(name = "article_id")
+    @JoinColumn(name = "article_id")
     private Article article;
 
     @Column(name = "amount_of")
