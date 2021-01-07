@@ -27,4 +27,11 @@ public class ProductArticle {
 
     @Column(name = "product_status")
     private ProductStatus status;
+
+    public ProductArticle(Product product, Article article, long amountOf, ProductStatus status){
+        this.product = product;
+        this.article = article;
+        this.amountOf = amountOf;
+        this.status = status;
+    }
 }
