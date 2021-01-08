@@ -6,6 +6,7 @@ import com.ikea.assessment.warehouse.entity.Article;
 import com.ikea.assessment.warehouse.entity.Product;
 import com.ikea.assessment.warehouse.entity.ProductArticle;
 import com.ikea.assessment.warehouse.entity.ProductStatus;
+import com.ikea.assessment.warehouse.exception.InsufficientStockException;
 import com.ikea.assessment.warehouse.exception.ObjectNotFoundException;
 import com.ikea.assessment.warehouse.mapper.ArticleMapper;
 import com.ikea.assessment.warehouse.repository.ArticleRepository;
@@ -36,48 +37,59 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductDTO> getNewProducts() {
-        logger.info("get all New products");
-        ProductStatus status = ProductStatus.NEW;
-        List<Product> productList = this.productRepository.findAllByStatus(status)
-                .orElseThrow(() -> new ObjectNotFoundException("Product", "Status", status.toString()));
-        return productList.stream().map(product -> {
-            List<ProductArticle> productArticlesList = productArticleRepository.findByProduct(product)
-                    .orElseThrow(() -> new ObjectNotFoundException("ProductArticle", "Product", String.valueOf(product.getId())));
+        try {
+            logger.info("get all New products");
+            ProductStatus status = ProductStatus.NEW;
+            List<Product> productList = this.productRepository.findAllByStatus(status)
+                    .orElseThrow(() -> new ObjectNotFoundException("Product", "Status", status.toString()));
+            return productList.stream().map(product -> {
+                List<ProductArticle> productArticlesList = productArticleRepository.findByProduct(product)
+                        .orElseThrow(() -> new ObjectNotFoundException("ProductArticle", "Product", String.valueOf(product.getId())));
 
-            List<ArticleDTO> articleDTOList = productArticlesList.stream().map(productArticle -> {
-                return ArticleMapper.convertToDTO(productArticle.getArticle());
+                List<ArticleDTO> articleDTOList = productArticlesList.stream().map(productArticle -> {
+                    return ArticleMapper.convertToDTO(productArticle.getArticle());
+                }).collect(Collectors.toList());
+                return new ProductDTO(product.getId(), product.getName(), articleDTOList);
             }).collect(Collectors.toList());
-            return new ProductDTO(product.getId(), product.getName(), articleDTOList);
-        }).collect(Collectors.toList());
+        } catch (RuntimeException exception) {
+            logger.error(exception.getMessage());
+            throw new RuntimeException(exception.getMessage());
+        }
     }
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public void sell(long id) {
-        logger.info("Sell product: " + id);
-        ProductStatus status = ProductStatus.NEW;
-        Product product = productRepository.findByIdAndStatus(id, status)
-                .orElseThrow(() -> new ObjectNotFoundException("Product", "(Id & Status)", "(" + String.valueOf(id) + " & " + status.toString() + ")"));
+        try {
+            logger.info("Sell product: " + id);
+            ProductStatus status = ProductStatus.NEW;
+            Product product = productRepository.findByIdAndStatus(id, status)
+                    .orElseThrow(() -> new ObjectNotFoundException("Product", "(Id & Status)", "(" + String.valueOf(id) + " & " + status.toString() + ")"));
 
-        List<ProductArticle> productArticleList = productArticleRepository.findByProduct(product)
-                .orElseThrow(() -> new ObjectNotFoundException("ProductArticle", "Product", String.valueOf(id)));
+            List<ProductArticle> productArticleList = productArticleRepository.findByProduct(product)
+                    .orElseThrow(() -> new ObjectNotFoundException("ProductArticle", "Product", String.valueOf(id)));
 
-        productArticleList.stream().forEach(productArticle -> {
-            updateArticle(productArticle);
-        });
-        updateProduct(product);
+            productArticleList.stream().forEach(productArticle -> {
+                updateArticle(productArticle);
+            });
+            updateProduct(product);
+        } catch (RuntimeException exception) {
+            logger.error(exception.getMessage());
+            throw new RuntimeException(exception.getMessage());
+        }
     }
 
-    private void updateArticle(ProductArticle productArticle) throws IllegalArgumentException {
+    private void updateArticle(ProductArticle productArticle) throws IllegalArgumentException, InsufficientStockException {
         Article article = productArticle.getArticle();
-        if(productArticle.getAmountOf() >= article.getStock()){
+        if (productArticle.getAmountOf() >= article.getStock()) {
             article.setStock(article.getStock() - productArticle.getAmountOf());
             articleRepository.save(article);
         } else {
-
-            throw new RuntimeException("");
+            long productId = productArticle.getProduct().getId();
+            long articleId = productArticle.getArticle().getId();
+            logger.error("Article " + articleId + " has insufficient stock for this product" + productId);
+            throw new InsufficientStockException(articleId, productId);
         }
-
     }
 
     private void updateProduct(Product product) throws IllegalArgumentException {
