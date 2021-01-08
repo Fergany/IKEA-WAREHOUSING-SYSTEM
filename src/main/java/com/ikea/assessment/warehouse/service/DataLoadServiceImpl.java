@@ -1,6 +1,9 @@
 package com.ikea.assessment.warehouse.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.ikea.assessment.warehouse.entity.Article;
 import com.ikea.assessment.warehouse.entity.Product;
 import com.ikea.assessment.warehouse.entity.ProductArticle;
@@ -22,8 +25,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ResourceUtils;
 
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 
 @Service
 public class DataLoadServiceImpl implements DataLoadService {
@@ -47,9 +53,61 @@ public class DataLoadServiceImpl implements DataLoadService {
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public void loadData(String inventoryFilePath, String productsFilePath) {
-        loadInventoryData(inventoryFilePath);
-        loadProductsData(productsFilePath);
+        loadInventoryDataWithObjectMapper(inventoryFilePath);
+        loadProductsDataWithObjectMapper(productsFilePath);
     }
+
+    private void loadInventoryDataWithObjectMapper(String inventoryFilePath) {
+        try {
+            logger.info("Start loading Articles data from: " + inventoryFilePath);
+            FileReader reader = new FileReader(ResourceUtils.getFile(inventoryFilePath));
+            JsonNode inventoryJsonNode = objectMapper.readTree(reader).get("inventory");
+            List<Article> articles = objectMapper.convertValue(inventoryJsonNode, new TypeReference<List<Article>>() {});
+            logger.info("Saving Articles' data to DB.");
+            articleRepository.saveAll(articles);
+        } catch (IOException exception) {
+            logger.error(exception.getMessage());
+            throw new DataLoadException(exception.getMessage());
+        }
+    }
+
+    private void loadProductsDataWithObjectMapper(String productFilePath) {
+        try {
+            logger.info("Start loading Products data from: " + productFilePath);
+            FileReader reader = new FileReader(ResourceUtils.getFile(productFilePath));
+            ArrayNode productsArrayNode = (ArrayNode) objectMapper.readTree(reader).get("products");
+            for (JsonNode jsonNode : productsArrayNode) {
+                Product product = objectMapper.convertValue(jsonNode, Product.class);
+                logger.info("Saving Product' data to DB.");
+                product = productRepository.save(product);
+                ArrayNode productArticles = (ArrayNode) jsonNode.get("contain_articles");
+                saveProductArticleWithObjectMapper(product, productArticles);
+            }
+
+        } catch (IOException exception) {
+            logger.error(exception.getMessage());
+            throw new DataLoadException(exception.getMessage());
+        }
+    }
+
+    private void saveProductArticleWithObjectMapper(Product product, ArrayNode productArticles) {
+        logger.info("Saving ProductArticle data to DB.");
+        try {
+            productArticles.forEach(productArticle -> {
+                long articleId = Long.parseLong(productArticle.get("art_id").asText());
+                long amountOf = Long.parseLong(productArticle.get("amount_of").asText());
+
+                Article article = articleRepository.findById(articleId)
+                        .orElseThrow(() -> new ObjectNotFoundException("Article", "Id", String.valueOf(articleId)));
+
+                productArticleRepository.save(new ProductArticle(product, article, amountOf));
+            });
+        } catch (ClassCastException | ObjectNotFoundException exception) {
+            logger.error(exception.getMessage());
+            throw new DataLoadException(exception.getMessage());
+        }
+    }
+
 
     private void loadInventoryData(String inventoryFilePath) throws DataLoadException {
         try {
