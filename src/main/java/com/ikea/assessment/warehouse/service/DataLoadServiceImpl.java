@@ -18,6 +18,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,12 +34,12 @@ public class DataLoadServiceImpl implements DataLoadService {
     private final ProductArticleRepository productArticleRepository;
     private final JSONParser jsonParser = new JSONParser();
 
+    @Autowired
     public DataLoadServiceImpl(ArticleRepository articleRepository, ProductRepository productRepository, ProductArticleRepository productArticleRepository) {
         this.articleRepository = articleRepository;
         this.productRepository = productRepository;
         this.productArticleRepository = productArticleRepository;
     }
-
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
@@ -46,7 +47,6 @@ public class DataLoadServiceImpl implements DataLoadService {
         loadInventoryData(inventoryFilePath);
         loadProductsData(productsFilePath);
     }
-
 
     private void loadInventoryData(String inventoryFilePath) throws DataLoadException {
         try {
@@ -59,7 +59,6 @@ public class DataLoadServiceImpl implements DataLoadService {
         }
     }
 
-
     private void saveArticle(JSONObject articleJSONObject) {
         logger.info("Saving Articles' data to DB.");
         try {
@@ -70,7 +69,6 @@ public class DataLoadServiceImpl implements DataLoadService {
             throw new DataLoadException(exception.getMessage());
         }
     }
-
 
     private void loadProductsData(String productsFilePath) throws DataLoadException {
         try {
@@ -86,7 +84,6 @@ public class DataLoadServiceImpl implements DataLoadService {
         }
     }
 
-
     private Product saveProduct(JSONObject productJSONObject) {
         logger.info("Saving Products' data to DB.");
         try {
@@ -98,7 +95,6 @@ public class DataLoadServiceImpl implements DataLoadService {
             throw new DataLoadException(exception.getMessage());
         }
     }
-
 
     private void saveProductArticle(Product product, JSONObject productJSONObject) {
         logger.info("Saving ProductArticles' data to DB.");
