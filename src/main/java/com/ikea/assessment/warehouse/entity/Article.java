@@ -11,7 +11,6 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class Article {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "article_id")
     private Long id;
 
