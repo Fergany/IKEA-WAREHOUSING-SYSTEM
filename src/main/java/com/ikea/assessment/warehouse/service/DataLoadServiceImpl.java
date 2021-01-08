@@ -1,5 +1,6 @@
 package com.ikea.assessment.warehouse.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ikea.assessment.warehouse.entity.Article;
 import com.ikea.assessment.warehouse.entity.Product;
 import com.ikea.assessment.warehouse.entity.ProductArticle;
@@ -33,12 +34,14 @@ public class DataLoadServiceImpl implements DataLoadService {
     private final ProductRepository productRepository;
     private final ProductArticleRepository productArticleRepository;
     private final JSONParser jsonParser = new JSONParser();
+    private final ObjectMapper objectMapper;
 
     @Autowired
-    public DataLoadServiceImpl(ArticleRepository articleRepository, ProductRepository productRepository, ProductArticleRepository productArticleRepository) {
+    public DataLoadServiceImpl(ArticleRepository articleRepository, ProductRepository productRepository, ProductArticleRepository productArticleRepository, ObjectMapper objectMapper) {
         this.articleRepository = articleRepository;
         this.productRepository = productRepository;
         this.productArticleRepository = productArticleRepository;
+        this.objectMapper = objectMapper;
     }
 
     @Override

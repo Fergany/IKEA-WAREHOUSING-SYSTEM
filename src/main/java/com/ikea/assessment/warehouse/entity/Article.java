@@ -13,7 +13,6 @@ import javax.persistence.*;
 public class Article {
     @Id
     @Column(name = "article_id")
-    @JsonProperty("art_id")
     private Long id;
 
     private String name;
