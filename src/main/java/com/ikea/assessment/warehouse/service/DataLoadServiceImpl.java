@@ -26,7 +26,7 @@ import java.io.IOException;
 @Service
 public class DataLoadServiceImpl implements DataLoadService {
 
-    Logger logger = LoggerFactory.getLogger(DataLoadService.class);
+    Logger logger = LoggerFactory.getLogger(DataLoadServiceImpl.class);
 
     private final ArticleRepository articleRepository;
     private final ProductRepository productRepository;
