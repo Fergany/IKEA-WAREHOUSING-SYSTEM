@@ -14,6 +14,7 @@ import com.ikea.assessment.warehouse.repository.ProductArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,7 @@ public class ProductServiceImpl implements ProductService {
     private final ArticleRepository articleRepository;
     private final ProductArticleRepository productArticleRepository;
 
+    @Autowired
     public ProductServiceImpl(ProductRepository productRepository, ArticleRepository articleRepository, ProductArticleRepository productArticleRepository) {
         this.productRepository = productRepository;
         this.articleRepository = articleRepository;
