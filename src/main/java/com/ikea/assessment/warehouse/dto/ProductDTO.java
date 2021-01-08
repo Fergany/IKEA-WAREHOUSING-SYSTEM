@@ -11,5 +11,4 @@ public class ProductDTO {
     Long id;
     String name;
     Long availableQuantity;
-    List<ArticleDTO> contain_articles;
 }

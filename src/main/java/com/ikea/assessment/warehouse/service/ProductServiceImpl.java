@@ -50,11 +50,7 @@ public class ProductServiceImpl implements ProductService {
 
                 final long availableQuantity = getAvailableQuantity(productArticlesList);
 
-                List<ArticleDTO> articleDTOList = productArticlesList.stream().map(productArticle -> {
-                    return ArticleMapper.convertToDTO(productArticle.getArticle());
-                }).collect(Collectors.toList());
-
-                return new ProductDTO(product.getId(), product.getName(), availableQuantity, articleDTOList);
+                return new ProductDTO(product.getId(), product.getName(), availableQuantity);
 
             }).collect(Collectors.toList());
         } catch (RuntimeException exception) {
