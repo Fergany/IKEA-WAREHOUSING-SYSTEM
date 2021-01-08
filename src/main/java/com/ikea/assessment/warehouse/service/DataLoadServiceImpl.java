@@ -7,19 +7,11 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.ikea.assessment.warehouse.entity.Article;
 import com.ikea.assessment.warehouse.entity.Product;
 import com.ikea.assessment.warehouse.entity.ProductArticle;
-import com.ikea.assessment.warehouse.entity.ProductStatus;
 import com.ikea.assessment.warehouse.exception.DataLoadException;
 import com.ikea.assessment.warehouse.exception.ObjectNotFoundException;
-import com.ikea.assessment.warehouse.mapper.ArticleMapper;
-import com.ikea.assessment.warehouse.mapper.ProductMapper;
 import com.ikea.assessment.warehouse.repository.ArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductRepository;
-import com.ikea.assessment.warehouse.util.JSONFileReader;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +31,6 @@ public class DataLoadServiceImpl implements DataLoadService {
     private final ArticleRepository articleRepository;
     private final ProductRepository productRepository;
     private final ProductArticleRepository productArticleRepository;
-    private final JSONParser jsonParser = new JSONParser();
     private final ObjectMapper objectMapper;
 
     @Autowired
@@ -53,16 +44,17 @@ public class DataLoadServiceImpl implements DataLoadService {
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public void loadData(String inventoryFilePath, String productsFilePath) {
-        loadInventoryDataWithObjectMapper(inventoryFilePath);
-        loadProductsDataWithObjectMapper(productsFilePath);
+        loadInventoryData(inventoryFilePath);
+        loadProductsData(productsFilePath);
     }
 
-    private void loadInventoryDataWithObjectMapper(String inventoryFilePath) {
+    private void loadInventoryData(String inventoryFilePath) {
         try {
             logger.info("Start loading Articles data from: " + inventoryFilePath);
             FileReader reader = new FileReader(ResourceUtils.getFile(inventoryFilePath));
             JsonNode inventoryJsonNode = objectMapper.readTree(reader).get("inventory");
-            List<Article> articles = objectMapper.convertValue(inventoryJsonNode, new TypeReference<List<Article>>() {});
+            List<Article> articles = objectMapper.convertValue(inventoryJsonNode, new TypeReference<List<Article>>() {
+            });
             logger.info("Saving Articles' data to DB.");
             articleRepository.saveAll(articles);
         } catch (IOException exception) {
@@ -71,18 +63,18 @@ public class DataLoadServiceImpl implements DataLoadService {
         }
     }
 
-    private void loadProductsDataWithObjectMapper(String productFilePath) {
+    private void loadProductsData(String productFilePath) {
         try {
             logger.info("Start loading Products data from: " + productFilePath);
             FileReader reader = new FileReader(ResourceUtils.getFile(productFilePath));
             ArrayNode productsArrayNode = (ArrayNode) objectMapper.readTree(reader).get("products");
-            for (JsonNode jsonNode : productsArrayNode) {
-                Product product = objectMapper.convertValue(jsonNode, Product.class);
-                logger.info("Saving Product' data to DB.");
+            productsArrayNode.forEach(productJsonNode -> {
+                Product product = objectMapper.convertValue(productJsonNode, Product.class);
+                logger.info("Saving Products' data to DB.");
                 product = productRepository.save(product);
-                ArrayNode productArticles = (ArrayNode) jsonNode.get("contain_articles");
-                saveProductArticleWithObjectMapper(product, productArticles);
-            }
+                ArrayNode productArticles = (ArrayNode) productJsonNode.get("contain_articles");
+                saveProductArticle(product, productArticles);
+            });
 
         } catch (IOException exception) {
             logger.error(exception.getMessage());
@@ -90,82 +82,12 @@ public class DataLoadServiceImpl implements DataLoadService {
         }
     }
 
-    private void saveProductArticleWithObjectMapper(Product product, ArrayNode productArticles) {
+    private void saveProductArticle(Product product, ArrayNode productArticles) {
         logger.info("Saving ProductArticle data to DB.");
         try {
             productArticles.forEach(productArticle -> {
                 long articleId = Long.parseLong(productArticle.get("art_id").asText());
                 long amountOf = Long.parseLong(productArticle.get("amount_of").asText());
-
-                Article article = articleRepository.findById(articleId)
-                        .orElseThrow(() -> new ObjectNotFoundException("Article", "Id", String.valueOf(articleId)));
-
-                productArticleRepository.save(new ProductArticle(product, article, amountOf));
-            });
-        } catch (ClassCastException | ObjectNotFoundException exception) {
-            logger.error(exception.getMessage());
-            throw new DataLoadException(exception.getMessage());
-        }
-    }
-
-
-    private void loadInventoryData(String inventoryFilePath) throws DataLoadException {
-        try {
-            logger.info("Start loading Articles data from: " + inventoryFilePath);
-            JSONArray articleList = JSONFileReader.getJSONArray(jsonParser, inventoryFilePath, "inventory");
-            articleList.forEach(article -> saveArticle((JSONObject) article));
-        } catch (IOException | ParseException exception) {
-            logger.error(exception.getMessage());
-            throw new DataLoadException(exception.getMessage());
-        }
-    }
-
-    private void saveArticle(JSONObject articleJSONObject) {
-        logger.info("Saving Articles' data to DB.");
-        try {
-            Article article = ArticleMapper.convertToEntity(articleJSONObject);
-            articleRepository.save(article);
-        } catch (IllegalArgumentException exception) {
-            logger.error(exception.getMessage());
-            throw new DataLoadException(exception.getMessage());
-        }
-    }
-
-    private void loadProductsData(String productsFilePath) throws DataLoadException {
-        try {
-            logger.info("Start loading Products data from: " + productsFilePath);
-            JSONArray productList = JSONFileReader.getJSONArray(jsonParser, productsFilePath, "products");
-            productList.forEach(product -> {
-                Product savedProduct = saveProduct((JSONObject) product);
-                saveProductArticle(savedProduct, (JSONObject) product);
-            });
-        } catch (IOException | ParseException | ObjectNotFoundException exception) {
-            logger.error(exception.getMessage());
-            throw new DataLoadException(exception.getMessage());
-        }
-    }
-
-    private Product saveProduct(JSONObject productJSONObject) {
-        logger.info("Saving Products' data to DB.");
-        try {
-            Product product = ProductMapper.convertToEntity(productJSONObject);
-            product.setStatus(ProductStatus.NEW);
-            return productRepository.save(product);
-        } catch (IllegalArgumentException exception) {
-            logger.error(exception.getMessage());
-            throw new DataLoadException(exception.getMessage());
-        }
-    }
-
-    private void saveProductArticle(Product product, JSONObject productJSONObject) {
-        logger.info("Saving ProductArticles' data to DB.");
-        try {
-            JSONArray articles = (JSONArray) productJSONObject.get("contain_articles");
-
-            articles.forEach(contain_article -> {
-                JSONObject articleJSONObject = (JSONObject) contain_article;
-                long articleId = Long.parseLong((String) articleJSONObject.get("art_id"));
-                long amountOf = Long.parseLong((String) articleJSONObject.get("amount_of"));
 
                 Article article = articleRepository.findById(articleId)
                         .orElseThrow(() -> new ObjectNotFoundException("Article", "Id", String.valueOf(articleId)));

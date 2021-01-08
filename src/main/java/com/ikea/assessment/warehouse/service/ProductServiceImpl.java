@@ -1,6 +1,5 @@
 package com.ikea.assessment.warehouse.service;
 
-import com.ikea.assessment.warehouse.dto.ArticleDTO;
 import com.ikea.assessment.warehouse.dto.ProductDTO;
 import com.ikea.assessment.warehouse.entity.Article;
 import com.ikea.assessment.warehouse.entity.Product;
@@ -8,7 +7,6 @@ import com.ikea.assessment.warehouse.entity.ProductArticle;
 import com.ikea.assessment.warehouse.entity.ProductStatus;
 import com.ikea.assessment.warehouse.exception.InsufficientStockException;
 import com.ikea.assessment.warehouse.exception.ObjectNotFoundException;
-import com.ikea.assessment.warehouse.mapper.ArticleMapper;
 import com.ikea.assessment.warehouse.repository.ArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductRepository;
@@ -18,9 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
