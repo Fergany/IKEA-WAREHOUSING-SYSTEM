@@ -20,6 +20,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 
 
@@ -39,6 +41,9 @@ public class ProductServiceImplIntegrationTest {
     private ArticleRepository articleRepository;
     @Autowired
     private ProductArticleRepository productArticleRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
+
 
     @Value("${products_file_path}")
     String productsFilePath;
@@ -90,7 +95,7 @@ public class ProductServiceImplIntegrationTest {
         Assert.assertEquals(ProductStatus.SOLD, product.getStatus());
     }
 
-    public void checkArticleStock(List<ProductArticle> productArticles) {
+    private void checkArticleStock(List<ProductArticle> productArticles) {
         productArticles
                 .stream()
                 .forEach(productArticle -> {
