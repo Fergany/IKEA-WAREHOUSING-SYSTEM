@@ -1,5 +1,6 @@
 package com.ikea.assessment.warehouse.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import javax.persistence.*;
 public class Article {
     @Id
     @Column(name = "article_id")
+    @JsonProperty("art_id")
     private Long id;
 
     private String name;
