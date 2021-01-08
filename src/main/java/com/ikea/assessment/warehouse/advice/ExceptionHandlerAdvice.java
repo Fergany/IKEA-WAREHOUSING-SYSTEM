@@ -17,27 +17,27 @@ public class ExceptionHandlerAdvice {
     Logger logger = LoggerFactory.getLogger(ExceptionHandlerAdvice.class);
 
     @ExceptionHandler(DataLoadException.class)
-    ResponseEntity<DataLoadException> dataLoadExceptionHandler(DataLoadException exception) {
+    ResponseEntity<String> dataLoadExceptionHandler(DataLoadException exception) {
         logger.error(exception.getMessage());
-        return new ResponseEntity<DataLoadException>(exception, HttpStatus.NOT_ACCEPTABLE);
+        return new ResponseEntity<String>(exception.getMessage(), HttpStatus.NOT_ACCEPTABLE);
     }
 
     @ExceptionHandler(ObjectNotFoundException.class)
-    ResponseEntity<ObjectNotFoundException> objectNotFoundExceptionHandler(ObjectNotFoundException exception) {
+    ResponseEntity<String> objectNotFoundExceptionHandler(ObjectNotFoundException exception) {
         logger.error(exception.getMessage());
-        return new ResponseEntity<ObjectNotFoundException>(exception, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<String>(exception.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(InsufficientStockException.class)
-    ResponseEntity<InsufficientStockException> insufficientStockExceptionHandler(InsufficientStockException exception) {
+    ResponseEntity<String> insufficientStockExceptionHandler(InsufficientStockException exception) {
         logger.error(exception.getMessage());
-        return new ResponseEntity<InsufficientStockException>(exception, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<String>(exception.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(RuntimeException.class)
-    ResponseEntity<RuntimeException> runTimeExceptionHandler(RuntimeException exception) {
+    ResponseEntity<String> runTimeExceptionHandler(RuntimeException exception) {
         logger.error(exception.getMessage());
-        return new ResponseEntity<RuntimeException>(exception, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<String>(exception.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
 }
