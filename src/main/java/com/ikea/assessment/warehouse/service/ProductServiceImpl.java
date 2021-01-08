@@ -17,7 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,10 +48,14 @@ public class ProductServiceImpl implements ProductService {
                 List<ProductArticle> productArticlesList = productArticleRepository.findByProduct(product)
                         .orElseThrow(() -> new ObjectNotFoundException("ProductArticle", "Product", String.valueOf(product.getId())));
 
+                final long availableQuantity = getAvailableQuantity(productArticlesList);
+
                 List<ArticleDTO> articleDTOList = productArticlesList.stream().map(productArticle -> {
                     return ArticleMapper.convertToDTO(productArticle.getArticle());
                 }).collect(Collectors.toList());
-                return new ProductDTO(product.getId(), product.getName(), articleDTOList);
+
+                return new ProductDTO(product.getId(), product.getName(), availableQuantity, articleDTOList);
+
             }).collect(Collectors.toList());
         } catch (RuntimeException exception) {
             logger.error(exception.getMessage());
@@ -57,31 +63,34 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    private long getAvailableQuantity(List<ProductArticle> productArticles) {
+        return productArticles
+                .stream()
+                .map(productArticle -> productArticle.getArticle().getStock() / productArticle.getAmountOf())
+                .min(Long::compare)
+                .get();
+    }
+
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public void sell(long id) {
-        try {
-            logger.info("Sell product: " + id);
-            ProductStatus status = ProductStatus.NEW;
-            Product product = productRepository.findByIdAndStatus(id, status)
-                    .orElseThrow(() -> new ObjectNotFoundException("Product", "(Id & Status)", "(" + String.valueOf(id) + " & " + status.toString() + ")"));
+        logger.info("Sell product: " + id);
+        ProductStatus status = ProductStatus.NEW;
+        Product product = productRepository.findByIdAndStatus(id, status)
+                .orElseThrow(() -> new ObjectNotFoundException("Product", "(Id & Status)", "(" + String.valueOf(id) + " & " + status.toString() + ")"));
 
-            List<ProductArticle> productArticleList = productArticleRepository.findByProduct(product)
-                    .orElseThrow(() -> new ObjectNotFoundException("ProductArticle", "Product", String.valueOf(id)));
+        List<ProductArticle> productArticleList = productArticleRepository.findByProduct(product)
+                .orElseThrow(() -> new ObjectNotFoundException("ProductArticle", "Product", String.valueOf(id)));
 
-            productArticleList.stream().forEach(productArticle -> {
-                updateArticle(productArticle);
-            });
-            updateProduct(product);
-        } catch (RuntimeException exception) {
-            logger.error(exception.getMessage());
-            throw new RuntimeException(exception.getMessage());
-        }
+        productArticleList.stream().forEach(productArticle -> {
+            updateArticle(productArticle);
+        });
+        updateProduct(product);
     }
 
     private void updateArticle(ProductArticle productArticle) throws IllegalArgumentException, InsufficientStockException {
         Article article = productArticle.getArticle();
-        if (productArticle.getAmountOf() >= article.getStock()) {
+        if (article.getStock() >= productArticle.getAmountOf()) {
             article.setStock(article.getStock() - productArticle.getAmountOf());
             articleRepository.save(article);
         } else {

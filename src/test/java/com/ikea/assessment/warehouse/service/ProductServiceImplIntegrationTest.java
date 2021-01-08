@@ -5,6 +5,7 @@ import com.ikea.assessment.warehouse.entity.Article;
 import com.ikea.assessment.warehouse.entity.Product;
 import com.ikea.assessment.warehouse.entity.ProductArticle;
 import com.ikea.assessment.warehouse.entity.ProductStatus;
+import com.ikea.assessment.warehouse.exception.InsufficientStockException;
 import com.ikea.assessment.warehouse.exception.ObjectNotFoundException;
 import com.ikea.assessment.warehouse.repository.ArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductArticleRepository;
@@ -17,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -108,15 +110,32 @@ public class ProductServiceImplIntegrationTest {
     }
 
     @Test
+    public void sellProductWithInsufficitArticleStock() {
+        Product product = productRepository.save(new Product("Test Product", ProductStatus.NEW));
+        long articleId = getNotExistingId(articleRepository);
+        Article article = articleRepository.save(new Article(articleId, "Test Article", 3));
+        ProductArticle productArticle = productArticleRepository.save(new ProductArticle(product, article, 10));
+        long productId = product.getId();
+
+        Assert.assertThrows(InsufficientStockException.class, () -> {
+            productService.sell(productId);
+        });
+    }
+
+    @Test
     public void sellProductNotExisting() {
-        long id = 123;
-        while (productRepository.existsById(id)) {
-            id += 10;
-        }
-        long productId = id;
+        long productId = getNotExistingId(productRepository);
         Assert.assertThrows(ObjectNotFoundException.class, () -> {
             productService.sell(productId);
         });
+    }
+
+    private long getNotExistingId(JpaRepository repository) {
+        long id = 123;
+        while (repository.existsById(id)) {
+            id += 10;
+        }
+        return id;
     }
 
 }
