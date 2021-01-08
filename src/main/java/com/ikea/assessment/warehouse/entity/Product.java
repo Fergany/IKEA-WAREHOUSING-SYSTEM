@@ -20,7 +20,7 @@ public class Product {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "product_status")
-    private ProductStatus status = ProductStatus.NEW;
+    private ProductStatus status;
 
     public Product(String name) {
         this.name = name;
