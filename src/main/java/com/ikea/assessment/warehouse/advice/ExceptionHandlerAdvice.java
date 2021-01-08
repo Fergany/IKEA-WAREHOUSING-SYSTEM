@@ -1,6 +1,7 @@
 package com.ikea.assessment.warehouse.advice;
 
 import com.ikea.assessment.warehouse.exception.DataLoadException;
+import com.ikea.assessment.warehouse.exception.InsufficientStockException;
 import com.ikea.assessment.warehouse.exception.ObjectNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,11 @@ public class ExceptionHandlerAdvice {
     @ExceptionHandler(ObjectNotFoundException.class)
     ResponseEntity<ObjectNotFoundException> objectNotFoundExceptionHandler(ObjectNotFoundException exception) {
         return new ResponseEntity<ObjectNotFoundException>(exception, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InsufficientStockException.class)
+    ResponseEntity<InsufficientStockException> insufficientStockExceptionHandler(InsufficientStockException exception) {
+        return new ResponseEntity<InsufficientStockException>(exception, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(RuntimeException.class)
