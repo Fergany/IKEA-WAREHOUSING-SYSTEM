@@ -35,8 +35,8 @@ public class ProductServiceImpl implements ProductService {
         List<Product> productList = this.productRepository.findAllByStatus(status)
                 .orElseThrow(() -> new ObjectNotFoundException("Product", "Status", status.toString()));
         return productList.stream().map(product -> {
-            List<ProductArticle> productArticlesList = productArticleRepository.findByProductAndStatus(product, status)
-                    .orElseThrow(() -> new ObjectNotFoundException("ProductArticle", "(Product & Status)", "(" + product.getId() + " & " + status.toString() + ")"));
+            List<ProductArticle> productArticlesList = productArticleRepository.findByProduct(product)
+                    .orElseThrow(() -> new ObjectNotFoundException("ProductArticle", "Product", String.valueOf(product.getId())));
 
             List<ArticleDTO> articleDTOList = productArticlesList.stream().map(productArticle -> {
                 return ArticleMapper.convertToDTO(productArticle.getArticle());
@@ -52,12 +52,11 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findByIdAndStatus(id, status)
                 .orElseThrow(() -> new ObjectNotFoundException("Product", "(Id & Status)", "(" + String.valueOf(id) + " & " + status.toString() + ")"));
 
-        List<ProductArticle> productArticleList = productArticleRepository.findByProductAndStatus(product, ProductStatus.NEW)
-                .orElseThrow(() -> new ObjectNotFoundException("ProductArticle", "(Product & Status)", "(" + String.valueOf(id) + " & " + ProductStatus.NEW.toString() + ")"));
+        List<ProductArticle> productArticleList = productArticleRepository.findByProduct(product)
+                .orElseThrow(() -> new ObjectNotFoundException("ProductArticle", "Product", String.valueOf(id)));
 
         productArticleList.stream().forEach(productArticle -> {
             updateArticle(productArticle);
-            updateProductArticle(productArticle);
         });
         updateProduct(product);
     }
@@ -66,11 +65,6 @@ public class ProductServiceImpl implements ProductService {
         Article article = productArticle.getArticle();
         article.setStock(article.getStock() - productArticle.getAmountOf());
         articleRepository.save(article);
-    }
-
-    private void updateProductArticle(ProductArticle productArticle) throws IllegalArgumentException {
-        productArticle.setStatus(ProductStatus.SOLD);
-        productArticleRepository.save(productArticle);
     }
 
     private void updateProduct(Product product) throws IllegalArgumentException {

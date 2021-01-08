@@ -113,7 +113,7 @@ public class DataLoadServiceImpl implements DataLoadService {
                 Article article = articleRepository.findById(articleId)
                         .orElseThrow(() -> new ObjectNotFoundException("Article", "Id", String.valueOf(articleId)));
 
-                productArticleRepository.save(new ProductArticle(product, article, amountOf, ProductStatus.NEW));
+                productArticleRepository.save(new ProductArticle(product, article, amountOf));
             });
         } catch (ClassCastException | ObjectNotFoundException exception) {
             logger.error(exception.getMessage());
