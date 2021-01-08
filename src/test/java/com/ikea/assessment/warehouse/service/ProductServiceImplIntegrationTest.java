@@ -27,7 +27,7 @@ import java.util.List;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @NoArgsConstructor
-public class ProductServiceIntegrationTest {
+public class ProductServiceImplIntegrationTest {
 
     @Autowired
     private IProductService productService;

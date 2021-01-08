@@ -18,12 +18,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class ProductService implements IProductService {
+public class ProductServiceImpl implements IProductService {
     private final ProductRepository productRepository;
     private final ArticleRepository articleRepository;
     private final ProductArticleRepository productArticleRepository;
 
-    public ProductService(ProductRepository productRepository, ArticleRepository articleRepository, ProductArticleRepository productArticleRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, ArticleRepository articleRepository, ProductArticleRepository productArticleRepository) {
         this.productRepository = productRepository;
         this.articleRepository = articleRepository;
         this.productArticleRepository = productArticleRepository;
