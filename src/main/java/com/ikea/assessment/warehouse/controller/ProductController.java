@@ -1,7 +1,7 @@
 package com.ikea.assessment.warehouse.controller;
 
 import com.ikea.assessment.warehouse.dto.ProductDTO;
-import com.ikea.assessment.warehouse.service.IProductService;
+import com.ikea.assessment.warehouse.service.ProductService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
@@ -14,9 +14,9 @@ import java.util.List;
 @Api(tags = {"Products API"})
 @RequestMapping("/api/v1/products")
 public class ProductController {
-    private final IProductService productService;
+    private final ProductService productService;
 
-    public ProductController(IProductService productService){
+    public ProductController(ProductService productService){
         this.productService = productService;
     }
 

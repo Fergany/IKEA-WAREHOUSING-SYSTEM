@@ -30,7 +30,7 @@ import java.util.List;
 public class ProductServiceImplIntegrationTest {
 
     @Autowired
-    private IProductService productService;
+    private ProductService productService;
     @Autowired
     private IDataLoadService dataLoadService;
     @Autowired
