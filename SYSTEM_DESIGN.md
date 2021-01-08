@@ -31,38 +31,18 @@ APIs to select game by id to get game info {id, pits, status, winner}.
 ##### Returns: (JSON) 
 Here is a sample of list products and quantity of each that is an available with the current inventory
 ```
-{
-  "products": [
-    {
-      "name": "Dining Chair",
-      "contain_articles": [
-        {
-          "art_id": "1",
-          "amount_of": "4"
-        },
-        {
-          "art_id": "3",
-          "amount_of": "1"
-        }
-      ]
-    },
-    {
-      "name": "Dinning Table",
-      "contain_articles": [
-        {
-          "art_id": "1",
-          "amount_of": "4"
-        },
-        {
-          "art_id": "2",
-          "amount_of": "8"
-        }
-      ]
-    }
-  ]
-}
-
-
+[
+  {
+    "id": 1,
+    "name": "Dining Chair",
+    "availableQuantity": 2
+  },
+  {
+    "id": 5,
+    "name": "Dinning Table",
+    "availableQuantity": 1
+  }
+]
 ```
 ### PUT /api/v1/products/{id}/sell
 ```
@@ -70,7 +50,7 @@ APIs to sell a product that has the gaven {id}.
 ```
 ##### return 
 ```
-Successful (HTTP status code 200) or failed (HTTP status code 400).
+Successful (HTTP status code 204) or failed (HTTP status code 400).
 ```
 ##### Main Data Model:
 ```
