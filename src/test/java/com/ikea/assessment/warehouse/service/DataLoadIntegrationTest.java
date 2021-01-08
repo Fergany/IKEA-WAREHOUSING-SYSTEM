@@ -18,7 +18,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class DataLoadIntegrationTest {
     @Autowired
-    private IDataLoadService dataLoadService;
+    private DataLoadService dataLoadService;
     @Autowired
     private ProductRepository productRepository;
     @Autowired

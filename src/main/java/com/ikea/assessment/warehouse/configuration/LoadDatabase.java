@@ -1,6 +1,6 @@
 package com.ikea.assessment.warehouse.configuration;
 
-import com.ikea.assessment.warehouse.service.IDataLoadService;
+import com.ikea.assessment.warehouse.service.DataLoadService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +18,7 @@ public class LoadDatabase {
     String productsFilePath;
 
     @Bean
-    CommandLineRunner initDatabase(IDataLoadService dataLoadService) {
+    CommandLineRunner initDatabase(DataLoadService dataLoadService) {
         return args -> {
             dataLoadService.loadData(inventoryFilePath, productsFilePath);
         };

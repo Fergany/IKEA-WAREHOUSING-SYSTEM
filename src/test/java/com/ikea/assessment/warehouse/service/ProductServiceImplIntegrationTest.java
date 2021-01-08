@@ -32,7 +32,7 @@ public class ProductServiceImplIntegrationTest {
     @Autowired
     private ProductService productService;
     @Autowired
-    private IDataLoadService dataLoadService;
+    private DataLoadService dataLoadService;
     @Autowired
     private ProductRepository productRepository;
     @Autowired
