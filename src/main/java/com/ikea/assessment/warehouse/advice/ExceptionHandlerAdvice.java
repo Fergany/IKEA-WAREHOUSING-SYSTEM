@@ -20,4 +20,9 @@ public class ExceptionHandlerAdvice {
         return new ResponseEntity<ObjectNotFoundException>(exception, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    ResponseEntity<RuntimeException> runTimeExceptionHandler(RuntimeException exception) {
+        return new ResponseEntity<RuntimeException>(exception, HttpStatus.BAD_REQUEST);
+    }
+
 }
