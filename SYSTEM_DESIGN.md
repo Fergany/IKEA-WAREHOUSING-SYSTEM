@@ -50,7 +50,7 @@ APIs to sell a product that has the gaven {id}.
 ```
 ##### return 
 ```
-Successful (HTTP status code 204) or failed (HTTP status code 400).
+Successful (HTTP status code 204) or failed (HTTP status code 400 OR 404) based on the failure reason.
 ```
 ##### Main Data Model:
 ```
