@@ -4,6 +4,7 @@ import com.ikea.assessment.warehouse.dto.ProductDTO;
 import com.ikea.assessment.warehouse.service.ProductService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class ProductController {
 
     @ApiOperation(value = "Sell Product")
     @PutMapping("/{id}/sell")
-    public ResponseEntity<Void> sell(@PathVariable long id){
+    public ResponseEntity<Void> sell(@ApiParam(value = "Product Id", required = true, example = "5") @PathVariable long id){
         productService.sell(id);
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     }
