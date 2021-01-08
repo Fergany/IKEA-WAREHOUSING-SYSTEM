@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,12 +42,12 @@ public class ProductServiceImpl implements ProductService {
             logger.info("get all New products");
             ProductStatus status = ProductStatus.NEW;
             List<Product> productList = this.productRepository.findAllByStatus(status)
-                    .orElseThrow(() -> new ObjectNotFoundException("Product", "Status", status.toString()));
+                    .orElse(new ArrayList());
             return productList.stream().map(product -> {
                 List<ProductArticle> productArticlesList = productArticleRepository.findByProduct(product)
-                        .orElseThrow(() -> new ObjectNotFoundException("ProductArticle", "Product", String.valueOf(product.getId())));
+                        .orElse(new ArrayList());
 
-                final long availableQuantity = getAvailableQuantity(productArticlesList);
+                final long availableQuantity = productArticlesList.size() == 0? 0 : getAvailableQuantity(productArticlesList);
 
                 return new ProductDTO(product.getId(), product.getName(), availableQuantity);
 
