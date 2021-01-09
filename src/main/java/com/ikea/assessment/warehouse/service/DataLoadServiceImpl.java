@@ -15,12 +15,15 @@ import com.ikea.assessment.warehouse.repository.ProductRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ResourceUtils;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @Service
@@ -51,8 +54,8 @@ public class DataLoadServiceImpl implements DataLoadService {
     private void loadInventoryData(String inventoryFilePath) {
         try {
             logger.info("Start loading Articles data from: " + inventoryFilePath);
-            FileReader reader = new FileReader(ResourceUtils.getFile(inventoryFilePath));
-            JsonNode inventoryJsonNode = objectMapper.readTree(reader).get("inventory");
+            InputStream inputStream = getClass().getResourceAsStream(inventoryFilePath);
+            JsonNode inventoryJsonNode = objectMapper.readTree(inputStream).get("inventory");
             List<Article> articles = objectMapper.convertValue(inventoryJsonNode, new TypeReference<List<Article>>() {
             });
             logger.info("Saving Articles' data to DB.");
@@ -66,8 +69,8 @@ public class DataLoadServiceImpl implements DataLoadService {
     private void loadProductsData(String productFilePath) {
         try {
             logger.info("Start loading Products data from: " + productFilePath);
-            FileReader reader = new FileReader(ResourceUtils.getFile(productFilePath));
-            ArrayNode productsArrayNode = (ArrayNode) objectMapper.readTree(reader).get("products");
+            InputStream inputStream = getClass().getResourceAsStream(productFilePath);
+            ArrayNode productsArrayNode = (ArrayNode) objectMapper.readTree(inputStream).get("products");
             productsArrayNode.forEach(productJsonNode -> {
                 Product product = objectMapper.convertValue(productJsonNode, Product.class);
                 logger.info("Saving Products' data to DB.");
