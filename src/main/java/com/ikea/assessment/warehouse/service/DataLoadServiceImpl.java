@@ -60,7 +60,7 @@ public class DataLoadServiceImpl implements DataLoadService {
             });
             logger.info("Saving Articles' data to DB.");
             articleRepository.saveAll(articles);
-        } catch (IOException exception) {
+        } catch (IOException | IllegalArgumentException exception) {
             logger.error(exception.getMessage());
             throw new DataLoadException(exception.getMessage());
         }
@@ -79,7 +79,7 @@ public class DataLoadServiceImpl implements DataLoadService {
                 saveProductArticle(product, productArticles);
             });
 
-        } catch (IOException exception) {
+        } catch (IOException | IllegalArgumentException exception) {
             logger.error(exception.getMessage());
             throw new DataLoadException(exception.getMessage());
         }
@@ -97,7 +97,7 @@ public class DataLoadServiceImpl implements DataLoadService {
 
                 productArticleRepository.save(new ProductArticle(product, article, amountOf));
             });
-        } catch (ClassCastException | ObjectNotFoundException exception) {
+        } catch (ClassCastException | ObjectNotFoundException | IllegalArgumentException  exception) {
             logger.error(exception.getMessage());
             throw new DataLoadException(exception.getMessage());
         }
