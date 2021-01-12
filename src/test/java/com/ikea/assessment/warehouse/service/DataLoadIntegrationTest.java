@@ -5,22 +5,16 @@ import com.ikea.assessment.warehouse.repository.ArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductRepository;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
@@ -41,6 +35,7 @@ public class DataLoadIntegrationTest {
     String inventoryFilePath;
 
     @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void loadDataHappyPath(){
         dataLoadService.loadData(inventoryFilePath, productsFilePath);
         Assert.assertEquals(2, productRepository.findAll().size());
