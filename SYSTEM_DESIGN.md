@@ -26,7 +26,7 @@ We can have REST APIs to expose the functionality of warehousing service.
 ```
 ### GET /api/v1/products/
 ```
-APIs to select game by id to get game info {id, pits, status, winner}.
+APIs to list all products and quantity of each that is an available with the current inventory.
 ```
 ##### Returns: (JSON) 
 Here is a sample of list products and quantity of each that is an available with the current inventory
@@ -46,7 +46,7 @@ Here is a sample of list products and quantity of each that is an available with
 ```
 ### PUT /api/v1/products/{id}/sell
 ```
-APIs to sell a product that has the gaven {id}.
+APIs to sell a product with a given {id} and update the inventory accordingly..
 ```
 ##### return 
 ```
