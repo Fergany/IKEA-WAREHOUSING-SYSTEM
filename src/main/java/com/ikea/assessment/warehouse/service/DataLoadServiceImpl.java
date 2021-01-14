@@ -12,24 +12,19 @@ import com.ikea.assessment.warehouse.exception.ObjectNotFoundException;
 import com.ikea.assessment.warehouse.repository.ArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ResourceUtils;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+@Slf4j
 @Service
 public class DataLoadServiceImpl implements DataLoadService {
 
-    Logger logger = LoggerFactory.getLogger(DataLoadServiceImpl.class);
 
     private final ArticleRepository articleRepository;
     private final ProductRepository productRepository;
@@ -53,40 +48,40 @@ public class DataLoadServiceImpl implements DataLoadService {
 
     private void loadInventoryData(String inventoryFilePath) {
         try {
-            logger.info("Start loading Articles data from: " + inventoryFilePath);
+            log.info("Start loading Articles data from: " + inventoryFilePath);
             InputStream inputStream = getClass().getResourceAsStream(inventoryFilePath);
             JsonNode inventoryJsonNode = objectMapper.readTree(inputStream).get("inventory");
             List<Article> articles = objectMapper.convertValue(inventoryJsonNode, new TypeReference<List<Article>>() {
             });
-            logger.info("Saving Articles' data to DB.");
+            log.info("Saving Articles' data to DB.");
             articleRepository.saveAll(articles);
         } catch (IOException | IllegalArgumentException exception) {
-            logger.error(exception.getMessage());
+            log.error(exception.getMessage());
             throw new DataLoadException(exception.getMessage());
         }
     }
 
     private void loadProductsData(String productFilePath) {
         try {
-            logger.info("Start loading Products data from: " + productFilePath);
+            log.info("Start loading Products data from: " + productFilePath);
             InputStream inputStream = getClass().getResourceAsStream(productFilePath);
             ArrayNode productsArrayNode = (ArrayNode) objectMapper.readTree(inputStream).get("products");
             productsArrayNode.forEach(productJsonNode -> {
                 Product product = objectMapper.convertValue(productJsonNode, Product.class);
-                logger.info("Saving Products' data to DB.");
+                log.info("Saving Products' data to DB.");
                 product = productRepository.save(product);
                 ArrayNode productArticles = (ArrayNode) productJsonNode.get("contain_articles");
                 saveProductArticle(product, productArticles);
             });
 
         } catch (IOException | IllegalArgumentException exception) {
-            logger.error(exception.getMessage());
+            log.error(exception.getMessage());
             throw new DataLoadException(exception.getMessage());
         }
     }
 
     private void saveProductArticle(Product product, ArrayNode productArticles) {
-        logger.info("Saving ProductArticle data to DB.");
+        log.info("Saving ProductArticle data to DB.");
         try {
             productArticles.forEach(productArticle -> {
                 long articleId = Long.parseLong(productArticle.get("art_id").asText());
@@ -98,7 +93,7 @@ public class DataLoadServiceImpl implements DataLoadService {
                 productArticleRepository.save(new ProductArticle(product, article, amountOf));
             });
         } catch (ClassCastException | ObjectNotFoundException | IllegalArgumentException  exception) {
-            logger.error(exception.getMessage());
+            log.error(exception.getMessage());
             throw new DataLoadException(exception.getMessage());
         }
     }
