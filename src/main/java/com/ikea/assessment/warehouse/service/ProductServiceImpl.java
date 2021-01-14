@@ -10,8 +10,7 @@ import com.ikea.assessment.warehouse.exception.ObjectNotFoundException;
 import com.ikea.assessment.warehouse.repository.ArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductArticleRepository;
 import com.ikea.assessment.warehouse.repository.ProductRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ProductServiceImpl implements ProductService {
-
-    Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
 
     private final ProductRepository productRepository;
     private final ArticleRepository articleRepository;
@@ -39,7 +37,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductDTO> getNewProducts() {
         try {
-            logger.info("get all New products");
+            log.info("get all New products");
             ProductStatus status = ProductStatus.NEW;
             List<Product> productList = this.productRepository.findAllByStatus(status)
                     .orElse(new ArrayList());
@@ -53,7 +51,7 @@ public class ProductServiceImpl implements ProductService {
 
             }).collect(Collectors.toList());
         } catch (RuntimeException exception) {
-            logger.error(exception.getMessage());
+            log.error(exception.getMessage());
             throw new RuntimeException(exception.getMessage());
         }
     }
@@ -69,7 +67,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public void sell(long id) {
-        logger.info("Sell product: " + id);
+        log.info("Sell product: " + id);
         ProductStatus status = ProductStatus.NEW;
         Product product = productRepository.findByIdAndStatus(id, status)
                 .orElseThrow(() -> new ObjectNotFoundException("Product", "(Id & Status)", "(" + String.valueOf(id) + " & " + status.toString() + ")"));
@@ -91,7 +89,7 @@ public class ProductServiceImpl implements ProductService {
         } else {
             long productId = productArticle.getProduct().getId();
             long articleId = productArticle.getArticle().getId();
-            logger.error("Article " + articleId + " has insufficient stock for this product" + productId);
+            log.error("Article " + articleId + " has insufficient stock for this product" + productId);
             throw new InsufficientStockException(articleId, productId);
         }
     }
